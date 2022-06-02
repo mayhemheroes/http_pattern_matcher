@@ -1,0 +1,4 @@
+project: PROJECT
+target: http_template_fuzz_test
+cmds:
+- cmd: /out/http_template_fuzz_test
