@@ -16,6 +16,20 @@
 #
 ################################################################################
 
-# This project uses bazel rules_fuzzing.
+# Build directly with bazel, bypassing bazel_build_fuzz_tests which passes
+# --@rules_fuzzing//fuzzing:java_engine that does not exist in rules_fuzzing v0.1.1.
+bazel build \
+    "--@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine" \
+    "--@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz" \
+    "--@rules_fuzzing//fuzzing:cc_engine_sanitizer=none" \
+    "--cxxopt=-stdlib=libc++" \
+    "--linkopt=-lc++" \
+    "--verbose_failures" \
+    "--spawn_strategy=standalone" \
+    "--action_env=CC=${CC}" \
+    "--action_env=CXX=${CXX}" \
+    //:http_template_fuzz_test_oss_fuzz
 
-bazel_build_fuzz_tests
+for oss_fuzz_archive in $(find bazel-bin/ -name "*_oss_fuzz.tar"); do
+    tar --no-same-owner -xvf "${oss_fuzz_archive}" -C "${OUT}"
+done
